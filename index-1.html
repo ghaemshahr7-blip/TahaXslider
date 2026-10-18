@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TahaXslider</title>
+<style>
+:root {
+  --bg: #f7f5fb;
+  --fg: #1e1633;
+  --accent: #6d3bd9;
+  --on-accent: #ffffff;
+  --s1: #5b2fc7;
+  --s2: #8a4fe0;
+  --s3: #3f2a8f;
+  --s4: #b05bd1;
+  --font-code: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #130e22;
+    --fg: #eee9fa;
+    --accent: #a98bff;
+    --on-accent: #150d2b;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #130e22;
+  --fg: #eee9fa;
+  --accent: #a98bff;
+  --on-accent: #150d2b;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { direction: rtl; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 36px;
+  padding-block: 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+
+.brand { display: flex; flex-direction: column; align-items: center; gap: 14px; direction: ltr; }
+.brand svg { width: clamp(84px, 22vw, 120px); height: auto; }
+.brand b { font-family: var(--font-code); font-weight: 500; font-size: clamp(30px, 8vw, 52px); letter-spacing: -0.03em; line-height: 1.1; }
+.brand b i { font-style: normal; color: var(--accent); }
+
+/* slider */
+.tx { position: relative; overflow: hidden; border-radius: 20px; direction: rtl; width: 100%; max-width: 760px; user-select: none; -webkit-user-select: none; background: var(--s3); }
+.tx-track { display: flex; touch-action: pan-y; transition: transform 0.55s cubic-bezier(0.22, 0.8, 0.28, 1); cursor: grab; }
+.tx-track.drag { transition: none; cursor: grabbing; }
+.tx-slide { flex: 0 0 100%; min-width: 0; min-height: clamp(240px, 50vw, 400px); position: relative; overflow: hidden; }
+.tx-slide::before, .tx-slide::after { content: ""; position: absolute; pointer-events: none; }
+.tx-slide:nth-child(1) { background: linear-gradient(135deg, var(--s1), var(--s2)); }
+.tx-slide:nth-child(2) { background: linear-gradient(135deg, var(--s3), var(--s1)); }
+.tx-slide:nth-child(3) { background: linear-gradient(135deg, var(--s2), var(--s4)); }
+.tx-slide:nth-child(4) { background: linear-gradient(135deg, var(--s4), var(--s3)); }
+
+.tx-slide:nth-child(1)::before { inset: 0; background: radial-gradient(circle at 28% 36%, rgba(255,255,255,0.2) 0 26%, transparent 26.5%); }
+.tx-slide:nth-child(1)::after { width: 42%; aspect-ratio: 1; border: 3px solid rgba(255,255,255,0.4); border-radius: 50%; bottom: -14%; right: 10%; }
+
+.tx-slide:nth-child(2)::before { inset: 0; background: repeating-linear-gradient(135deg, rgba(255,255,255,0.12) 0 14px, transparent 14px 40px); }
+.tx-slide:nth-child(2)::after { width: 34%; aspect-ratio: 1; background: rgba(255,255,255,0.22); border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+
+.tx-slide:nth-child(3)::before { inset: 0; background: repeating-radial-gradient(circle at 70% 50%, rgba(255,255,255,0.2) 0 6px, transparent 6px 28px); }
+.tx-slide:nth-child(3)::after { width: 16%; aspect-ratio: 1; border: 3px solid rgba(255,255,255,0.55); border-radius: 50%; top: 14%; left: 12%; }
+
+.tx-slide:nth-child(4)::before { inset: 0; background: radial-gradient(rgba(255,255,255,0.32) 2px, transparent 2.5px) 0 0 / 28px 28px; }
+.tx-slide:nth-child(4)::after { width: 48%; aspect-ratio: 1; background: rgba(255,255,255,0.14); border-radius: 50%; bottom: -24%; left: -8%; }
+
+.tx-arrow { position: absolute; top: 50%; margin-top: -22px; width: 44px; height: 44px; border-radius: 50%; border: 0; background: rgba(255,255,255,0.92); color: #2a1763; cursor: pointer; display: grid; place-items: center; font-size: 22px; line-height: 1; padding: 0; }
+.tx-arrow:hover { background: #fff; }
+.tx-arrow:disabled { opacity: 0.4; cursor: default; }
+.tx-arrow.prev { right: 12px; }
+.tx-arrow.next { left: 12px; }
+.tx-bar { position: absolute; bottom: 16px; inset-inline: 0; display: flex; align-items: center; justify-content: center; gap: 14px; }
+.tx-dots { display: flex; gap: 8px; }
+.tx-dot { width: 10px; height: 10px; border-radius: 99px; border: 0; padding: 0; background: rgba(255,255,255,0.5); cursor: pointer; transition: width 0.3s, background 0.3s; }
+.tx-dot[aria-current="true"] { width: 28px; background: #fff; }
+.tx-play { width: 28px; height: 28px; border: 0; border-radius: 50%; background: rgba(255,255,255,0.25); cursor: pointer; display: grid; place-items: center; padding: 0; }
+.tx-play .ico { display: block; }
+.tx-play.is-playing .ico { width: 10px; height: 10px; border-left: 3px solid #fff; border-right: 3px solid #fff; }
+.tx-play:not(.is-playing) .ico { width: 0; height: 0; border-top: 6px solid transparent; border-bottom: 6px solid transparent; border-right: 10px solid #fff; margin-right: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tx-track, .tx-dot { transition: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="brand" role="img" aria-label="TahaXslider">
+  <svg viewBox="0 0 34 34" aria-hidden="true">
+    <rect width="34" height="34" rx="9" fill="var(--accent)"/>
+    <rect x="6" y="9" width="22" height="13" rx="3" fill="var(--on-accent)" opacity="0.95"/>
+    <circle cx="12" cy="27" r="1.8" fill="var(--on-accent)" opacity="0.6"/>
+    <rect x="16" y="25.4" width="6" height="3.2" rx="1.6" fill="var(--on-accent)"/>
+    <circle cx="26" cy="27" r="1.8" fill="var(--on-accent)" opacity="0.6"/>
+  </svg>
+  <b>Taha<i>X</i>slider</b>
+</div>
+
+<div class="tx" id="demo" tabindex="0" role="region" aria-roledescription="اسلایدر" aria-label="TahaXslider">
+  <div class="tx-track">
+    <div class="tx-slide"></div>
+    <div class="tx-slide"></div>
+    <div class="tx-slide"></div>
+    <div class="tx-slide"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function TahaXslider(el, opts) {
+    this.el = typeof el === 'string' ? document.querySelector(el) : el;
+    this.o = Object.assign({ autoplay: true, interval: 4000, loop: true }, opts || {});
+    if (reduce) this.o.autoplay = false;
+    this.track = this.el.querySelector('.tx-track');
+    this.slides = Array.prototype.slice.call(this.track.children);
+    this.i = 0;
+    this.timer = null;
+    this.playing = false;
+    this.build();
+    this.bind();
+    this.render();
+    if (this.o.autoplay) this.play();
+  }
+
+  TahaXslider.prototype.build = function () {
+    var self = this;
+    var mk = function (tag, cls, txt, attrs) {
+      var n = document.createElement(tag);
+      if (cls) n.className = cls;
+      if (txt) n.textContent = txt;
+      for (var k in (attrs || {})) n.setAttribute(k, attrs[k]);
+      return n;
+    };
+    this.prevBtn = mk('button', 'tx-arrow prev', '›', { type: 'button', 'aria-label': 'اسلاید قبلی' });
+    this.nextBtn = mk('button', 'tx-arrow next', '‹', { type: 'button', 'aria-label': 'اسلاید بعدی' });
+    var bar = mk('div', 'tx-bar');
+    var dots = mk('div', 'tx-dots');
+    this.dots = this.slides.map(function (s, n) {
+      var d = mk('button', 'tx-dot', '', { type: 'button', 'aria-label': 'اسلاید ' + (n + 1) });
+      d.addEventListener('click', function () { self.go(n); });
+      dots.appendChild(d);
+      return d;
+    });
+    this.playBtn = mk('button', 'tx-play', '', { type: 'button' });
+    this.playBtn.appendChild(mk('span', 'ico'));
+    bar.appendChild(dots);
+    bar.appendChild(this.playBtn);
+    this.el.appendChild(this.prevBtn);
+    this.el.appendChild(this.nextBtn);
+    this.el.appendChild(bar);
+  };
+
+  TahaXslider.prototype.bind = function () {
+    var self = this, startX = 0, dx = 0, down = false;
+    this.nextBtn.addEventListener('click', function () { self.next(); });
+    this.prevBtn.addEventListener('click', function () { self.prev(); });
+    this.playBtn.addEventListener('click', function () { self.playing ? self.pause() : self.play(); });
+    this.el.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowLeft') { e.preventDefault(); self.next(); }
+      if (e.key === 'ArrowRight') { e.preventDefault(); self.prev(); }
+    });
+    this.el.addEventListener('mouseenter', function () { self.hold = true; });
+    this.el.addEventListener('mouseleave', function () { self.hold = false; });
+    this.el.addEventListener('focusin', function () { self.hold = true; });
+    this.el.addEventListener('focusout', function () { self.hold = false; });
+
+    this.track.addEventListener('pointerdown', function (e) {
+      down = true; startX = e.clientX; dx = 0;
+      self.track.classList.add('drag');
+      try { self.track.setPointerCapture(e.pointerId); } catch (err) {}
+    });
+    this.track.addEventListener('pointermove', function (e) {
+      if (!down) return;
+      dx = e.clientX - startX;
+      self.track.style.transform = 'translateX(calc(' + (self.i * 100) + '% + ' + dx + 'px))';
+    });
+    var end = function () {
+      if (!down) return;
+      down = false;
+      self.track.classList.remove('drag');
+      if (dx > 50) self.next(); else if (dx < -50) self.prev(); else self.render();
+    };
+    this.track.addEventListener('pointerup', end);
+    this.track.addEventListener('pointercancel', end);
+  };
+
+  TahaXslider.prototype.go = function (n) {
+    var last = this.slides.length - 1;
+    if (n > last) n = this.o.loop ? 0 : last;
+    if (n < 0) n = this.o.loop ? last : 0;
+    this.i = n;
+    this.render();
+  };
+  TahaXslider.prototype.next = function () { this.go(this.i + 1); };
+  TahaXslider.prototype.prev = function () { this.go(this.i - 1); };
+
+  TahaXslider.prototype.play = function () {
+    var self = this;
+    this.playing = true;
+    clearInterval(this.timer);
+    this.timer = setInterval(function () { if (!self.hold) self.next(); }, this.o.interval);
+    this.render();
+  };
+  TahaXslider.prototype.pause = function () {
+    this.playing = false;
+    clearInterval(this.timer);
+    this.render();
+  };
+
+  TahaXslider.prototype.render = function () {
+    var self = this;
+    this.track.style.transform = 'translateX(' + (this.i * 100) + '%)';
+    this.dots.forEach(function (d, n) {
+      if (n === self.i) d.setAttribute('aria-current', 'true'); else d.removeAttribute('aria-current');
+    });
+    this.playBtn.classList.toggle('is-playing', this.playing);
+    this.playBtn.setAttribute('aria-label', this.playing ? 'توقف پخش خودکار' : 'شروع پخش خودکار');
+    if (!this.o.loop) {
+      this.prevBtn.disabled = this.i === 0;
+      this.nextBtn.disabled = this.i === this.slides.length - 1;
+    }
+  };
+
+  window.TahaXslider = TahaXslider;
+  new TahaXslider('#demo', { autoplay: true, interval: 4500, loop: true });
+})();
+</script>
+</body>
+</html>
